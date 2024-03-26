@@ -1,0 +1,56 @@
+{
+  "apps": [
+    {
+      "name": "libws-1",
+      "script": "./app.js",
+      "watch": false,
+      "args": " --mode=production --port=5000",
+      "instances": 1,
+      "out_file": "/tmp/ws-1.log",
+      "autorestart": true,
+      "max_restarts": 50,
+      "restart_delay": 10000,
+      "combine_logs": true,
+      "exec_mode": "fork"
+    },
+    {
+      "name": "libws-2",
+      "script": "./app.js",
+      "watch": false,
+      "args": " --mode=production --port=5001",
+      "instances": 1,
+      "out_file": "/tmp/ws-2.log",
+      "autorestart": true,
+      "max_restarts": 50,
+      "restart_delay": 10000,
+      "combine_logs": true,
+      "exec_mode": "fork"
+    },
+    {
+      "name": "libws-3",
+      "script": "./app.js",
+      "watch": false,
+      "args": " --mode=production --port=5002",
+      "instances": 1,
+      "out_file": "/tmp/ws-3.log",
+      "autorestart": true,
+      "max_restarts": 50,
+      "restart_delay": 10000,
+      "combine_logs": true,
+      "exec_mode": "fork"
+    },
+    {
+      "name": "libws-4",
+      "script": "./app.js",
+      "watch": false,
+      "args": " --mode=production --port=5003",
+      "instances": 1,
+      "out_file": "/tmp/ws-4.log",
+      "autorestart": true,
+      "max_restarts": 50,
+      "restart_delay": 10000,
+      "combine_logs": true,
+      "exec_mode": "fork"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+###
+## REGISTER USER
+POST http://localhost:5000/api/users/
+Content-Type: application/json
+
+{
+    "firstName": "José Augusto",
+    "secondName":"Freire",
+    "email":"aquarela.design@gmail.com",
+    "password": "prize1603",
+    "userType":"Admin",
+    "isAdmin":true
+}
+
+###
+GET http://localhost:5000/api/users/
+Content-Type: application/json
+
+
+###
+## LOGIN USER
+POST http://localhost:5000/api/users/login
+Content-Type: application/json
+
+{
+    "email":"administrator@example.com",
+    "password": "AdministratorPass123"
+}
+
+###
+## RESET PASSWORD
+POST http://localhost:5000/api/users/reset-password
+Content-Type: application/json
+
+{
+    "email":"aquarela.design@gmail.com"
+}
+
+###
+## CHANGE PASSWORD
+POST http://localhost:5000/api/users/change-password/65bea844994143e8f8a200c9/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YmVhODQ0OTk0MTQzZThmOGEyMDBjOSIsImlhdCI6MTcwNjk5MzczMiwiZXhwIjoxNzA5NTg1NzMyfQ.ZfU0wHD88NHveDzMUY2rViujFJGu-Ame27hOFzpKNXQ
+Content-Type: application/json
+
+{
+    "password":"3W!W.:srzc4r^!P"
+}
