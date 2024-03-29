@@ -41,7 +41,7 @@ const authUser = asyncHandler(async (req, res) => {
 
   if (user && (await user.matchPassword(password))) {
     if (!user.isActive) {
-      error(res, 400, "USER_DISABLED");
+      return error(res, 400, "USER_DISABLED");
     }
 
     const userDetails = {
@@ -52,9 +52,9 @@ const authUser = asyncHandler(async (req, res) => {
     res.json(userDetails);
   } else {
     if (!user) {
-      error(res, 400, "EMAIL_NOT_FOUND");
+      return error(res, 400, "EMAIL_NOT_FOUND");
     }
-    error(res, 400, "INVALID_PASSWORD");
+    return error(res, 400, "INVALID_PASSWORD");
   }
 });
 
@@ -88,7 +88,7 @@ const registerUser = asyncHandler(async (req, res) => {
       verified: user.verified,
     });
   } else {
-    error(res, 400, "INVALID_USER_DATA");
+    return error(res, 400, "INVALID_USER_DATA");
   }
 });
 
@@ -120,7 +120,7 @@ const sendRestPassword = asyncHandler(async (req, res) => {
 
   if (user) {
     if (!user.isActive) {
-      error(res, 400, "USER_DISABLED");
+      return error(res, 400, "USER_DISABLED");
     }
 
     let token = await Token.findOne({ userId: user._id });
@@ -176,11 +176,11 @@ const sendRestPassword = asyncHandler(async (req, res) => {
           });
       })
       .catch((error) => {
-        error(res, 400, "FILE_NOT_FOUND");
+        return error(res, 400, "FILE_NOT_FOUND");
         console.log("Failed to read template file:", error);
       });
   } else {
-    error(res, 400, "EMAIL_NOT_FOUND");
+    return error(res, 400, "EMAIL_NOT_FOUND");
   }
 });
 
@@ -188,11 +188,11 @@ const verifyResetPassword = asyncHandler(async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.params.id });
     if (!user) {
-      error(res, 400, "EMAIL_NOT_FOUND");
+      return error(res, 400, "EMAIL_NOT_FOUND");
     }
 
     if (!user.isActive) {
-      error(res, 400, "USER_DISABLED");
+      return error(res, 400, "USER_DISABLED");
     }
 
     const token = await Token.findOne({
@@ -208,7 +208,7 @@ const verifyResetPassword = asyncHandler(async (req, res) => {
     // res.status(200).send(`${process.env.BASE_URL}new-password/${user._id.toString()}/${token.token}`);
   } catch (error) {
     console.log(error);
-    error(res, 500, "INTERNAL_SERVER_ERROR");
+    return error(res, 500, "INTERNAL_SERVER_ERROR");
   }
 });
 
@@ -216,11 +216,11 @@ const setNewPassword = asyncHandler(async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.params.id });
     if (!user) {
-      error(res, 400, "EMAIL_NOT_FOUND");
+      return error(res, 400, "EMAIL_NOT_FOUND");
     }
 
     if (!user.isActive) {
-      error(res, 400, "USER_DISABLED");
+      return error(res, 400, "USER_DISABLED");
     }
 
     const token = await Token.findOne({
@@ -247,7 +247,7 @@ const setNewPassword = asyncHandler(async (req, res) => {
 
     res.status(200).send({ message: "Password reset successfully" });
   } catch (error) {
-    error(res, 500, "INTERNAL_SERVER_ERROR");
+    return error(res, 500, "INTERNAL_SERVER_ERROR");
   }
 });
 
@@ -256,7 +256,7 @@ const getAllUsers = async (req, res) => {
     const userst = await User.find();
     res.status(200).json({ success: true, data: userst });
   } catch (error) {
-    error(res, 500, "INTERNAL_SERVER_ERROR");
+    return error(res, 500, "INTERNAL_SERVER_ERROR");
   }
 };
 
@@ -266,7 +266,7 @@ const getAllTypeUsers = async (req, res) => {
     const userst = await User.find({ userType: userType });
     res.status(200).json({ success: true, data: userst });
   } catch (error) {
-    error(res, 500, "INTERNAL_SERVER_ERROR");
+    return error(res, 500, "INTERNAL_SERVER_ERROR");
   }
 };
 
@@ -277,7 +277,7 @@ const updateProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
 
   if (!user) {
-    error(res, 400, "EMAIL_NOT_FOUND");
+    return error(res, 400, "EMAIL_NOT_FOUND");
   }
 
   user.email = email || user.email;
@@ -297,7 +297,7 @@ const updateProfile = asyncHandler(async (req, res) => {
   if (userDetails) {
     res.status(200).json(userDetails);
   } else {
-    error(res, 500, "INTERNAL_SERVER_ERROR");
+    return error(res, 500, "INTERNAL_SERVER_ERROR");
   }
 });
 
