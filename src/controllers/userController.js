@@ -14,6 +14,22 @@ import Contact from "../models/userContactModel.js";
 import Document from "../models/userDocumentModel.js";
 import Andress from "../models/userAndressModel.js";
 
+const error = (res, code, message) => {
+  return res.status(code).json({
+    error: {
+      code: code,
+      errors: [
+        {
+          message: message,
+          domain: "global",
+          reason: "invalid",
+        },
+      ],
+      message: message,
+    },
+  });
+};
+
 const authUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -24,6 +40,10 @@ const authUser = asyncHandler(async (req, res) => {
     .populate("andress");
 
   if (user && (await user.matchPassword(password))) {
+    if (!user.isActive) {
+      error(res, 400, "USER_DISABLED");
+    }
+
     const userDetails = {
       user,
       token: generateToken(user._id),
@@ -31,8 +51,10 @@ const authUser = asyncHandler(async (req, res) => {
 
     res.json(userDetails);
   } else {
-    res.status(401);
-    throw new Error("Invalid email or password");
+    if (!user) {
+      error(res, 400, "EMAIL_NOT_FOUND");
+    }
+    error(res, 400, "INVALID_PASSWORD");
   }
 });
 
@@ -42,8 +64,7 @@ const registerUser = asyncHandler(async (req, res) => {
   const userExists = await User.findOne({ email });
 
   if (userExists) {
-    res.status(400);
-    throw new Error("User already exists");
+    error(res, 400, "EMAIL_EXISTS");
   }
 
   const user = await User.create({
@@ -67,8 +88,7 @@ const registerUser = asyncHandler(async (req, res) => {
       verified: user.verified,
     });
   } else {
-    res.status(400);
-    throw new Error("Invalid user data");
+    error(res, 400, "INVALID_USER_DATA");
   }
 });
 
@@ -99,6 +119,10 @@ const sendRestPassword = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email });
 
   if (user) {
+    if (!user.isActive) {
+      error(res, 400, "USER_DISABLED");
+    }
+
     let token = await Token.findOne({ userId: user._id });
 
     if (!token) {
@@ -152,18 +176,24 @@ const sendRestPassword = asyncHandler(async (req, res) => {
           });
       })
       .catch((error) => {
+        error(res, 400, "FILE_NOT_FOUND");
         console.log("Failed to read template file:", error);
       });
   } else {
-    res.status(401);
-    throw new Error("User Does Not Exist");
+    error(res, 400, "EMAIL_NOT_FOUND");
   }
 });
 
 const verifyResetPassword = asyncHandler(async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.params.id });
-    if (!user) return res.status(400).send({ message: "Invalid link" });
+    if (!user) {
+      error(res, 400, "EMAIL_NOT_FOUND");
+    }
+
+    if (!user.isActive) {
+      error(res, 400, "USER_DISABLED");
+    }
 
     const token = await Token.findOne({
       userId: user._id,
@@ -178,14 +208,20 @@ const verifyResetPassword = asyncHandler(async (req, res) => {
     // res.status(200).send(`${process.env.BASE_URL}new-password/${user._id.toString()}/${token.token}`);
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: "Internal Server Error ", error });
+    error(res, 500, "INTERNAL_SERVER_ERROR");
   }
 });
 
 const setNewPassword = asyncHandler(async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.params.id });
-    if (!user) return res.status(400).send({ message: "Invalid user link" });
+    if (!user) {
+      error(res, 400, "EMAIL_NOT_FOUND");
+    }
+
+    if (!user.isActive) {
+      error(res, 400, "USER_DISABLED");
+    }
 
     const token = await Token.findOne({
       userId: req.params.id,
@@ -211,7 +247,7 @@ const setNewPassword = asyncHandler(async (req, res) => {
 
     res.status(200).send({ message: "Password reset successfully" });
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error" });
+    error(res, 500, "INTERNAL_SERVER_ERROR");
   }
 });
 
@@ -220,7 +256,7 @@ const getAllUsers = async (req, res) => {
     const userst = await User.find();
     res.status(200).json({ success: true, data: userst });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    error(res, 500, "INTERNAL_SERVER_ERROR");
   }
 };
 
@@ -230,7 +266,7 @@ const getAllTypeUsers = async (req, res) => {
     const userst = await User.find({ userType: userType });
     res.status(200).json({ success: true, data: userst });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    error(res, 500, "INTERNAL_SERVER_ERROR");
   }
 };
 
@@ -241,8 +277,7 @@ const updateProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
 
   if (!user) {
-    res.status(404);
-    throw new Error("User not found");
+    error(res, 400, "EMAIL_NOT_FOUND");
   }
 
   user.email = email || user.email;
@@ -262,8 +297,7 @@ const updateProfile = asyncHandler(async (req, res) => {
   if (userDetails) {
     res.status(200).json(userDetails);
   } else {
-    res.status(500);
-    throw new Error("Failed to update user");
+    error(res, 500, "INTERNAL_SERVER_ERROR");
   }
 });
 
