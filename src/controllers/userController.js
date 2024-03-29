@@ -199,7 +199,9 @@ const verifyResetPassword = asyncHandler(async (req, res) => {
       userId: user._id,
       token: req.params.token,
     });
-    if (!token) return res.status(400).send({ message: "Invalid link" });
+    if (!token) {
+      return error(res, 400, "INVALID_TOKEN");
+    }
     console.log(user._id.toString());
     const resetPasswordLink = `${
       process.env.BASE_URL
@@ -228,7 +230,9 @@ const setNewPassword = asyncHandler(async (req, res) => {
       token: req.params.token,
     });
     console.log({ userId: req.params.id, token: token });
-    if (!token) return res.status(400).send({ message: "Invalid token link" });
+    if (!token) {
+      return error(res, 400, "INVALID_TOKEN");
+    }
 
     // if (!user.verified) return res.status(400).send({ message: "Invalid link" });
     // $2a$10$NkwMc8U5nV214hHBIQVNau6POGP2R4mv49Lb9cirTLY/Cb96I9sGi
