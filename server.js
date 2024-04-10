@@ -2,9 +2,18 @@ import path from "path";
 import express from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
+import bodyParser from "body-parser";
+// import helmet from "helmet";
+import cors from "cors";
+// import { Configuration, OpenAIApi } from "openai";
+import OpenAI from "openai";
+
 import { notFound, errorHandler } from "./src/middleware/errorMiddleware.js";
 import { connectDB } from "./src/config/db.js";
 import { WebSocketServer } from "ws";
+
+import openAiRoutes from "./src/routes/openaiRoutes.js";
+import openAiNewRoutes from "./src/routes/openaiNewRoutes.js";
 
 import emailRoutes from "./src/routes/emailRoutes.js";
 import userRoutes from "./src/routes/userRoutes.js";
@@ -20,6 +29,8 @@ import attendanceRoutes from "./src/routes/attendanceRoutes.js";
 // import accountRoutes from "./src/routes/accountantRoutes.js";
 // import adminRoutes from "./src/routes/adminRoutes.js";
 
+import chatGPT3 from "./src/routes/openaiRoutes.js";
+import chatGPT35 from "./src/routes/openaiNewRoutes.js";
 import chatRoutes from "./src/routes/chatRoutes.js";
 import messageRoutes from "./src/routes/messageRoutes.js";
 import conversationRoutes from "./src/routes/conversationRoutes.js";
@@ -29,8 +40,7 @@ import timetableRoutes from "./src/routes/timetableRoutes.js";
 import examRoutes from "./src/routes/examRoutes.js";
 import assignmentRoutes from "./src/routes/assignmentRoutes.js";
 import assignmentSubmissionRoutes from "./src/routes/assignmentSubmissionRoutes.js";
-
-import cors from "cors";
+import uploadRoutes from "./src/routes/uploadRoutes.js";
 
 dotenv.config();
 
@@ -44,11 +54,22 @@ app.use(
   })
 );
 
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
-}
+// app.use(helmet());
+// app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+app.use(morgan("common"));
+app.use(bodyParser.json({ limit: "30mb", extended: true }));
+app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 
 app.use(express.json());
+
+/* OPEN AI CONFIGURATION */
+// const configuration = new Configuration({
+//   apiKey: process.env.OPEN_API_KEY,
+// });
+// export const openai = new OpenAIApi(configuration);
+export const openai = new OpenAI({ apiKey: process.env.OPEN_API_KEY });
+app.use("/api/openaii", openAiRoutes);
+app.use("/api/openai", openAiNewRoutes);
 
 app.use("/api/email", emailRoutes);
 app.use("/api/user", userRoutes);
@@ -61,6 +82,8 @@ app.use("/api/courseunits", courseUnitsRoutes);
 // app.use("/api/accountants", accountRoutes);
 app.use("/api/attendance", attendanceRoutes);
 // app.use("/api/admin", adminRoutes);
+app.use("/api/chatgpt35", chatGPT35);
+app.use("/api/chatgpt3", chatGPT3);
 app.use("/api/chat", chatRoutes);
 app.use("/api/message", messageRoutes);
 app.use("/api/conversation", conversationRoutes);
@@ -71,6 +94,7 @@ app.use("/api/timetable", timetableRoutes);
 app.use("/api/exams", examRoutes);
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api/submissiions", assignmentSubmissionRoutes);
+app.use("/api/uploads", uploadRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
